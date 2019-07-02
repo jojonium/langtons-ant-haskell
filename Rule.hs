@@ -1,6 +1,7 @@
 module Rule
     ( Instruction(..)
     , Rule(..)
+    , Ruleset(..)
     , turn
     ) where
 
@@ -10,6 +11,7 @@ data Instruction = TurnLeft | TurnRight | Continue | UTurn deriving (Show)
 data Rule = Rule { inst :: Instruction
                  , color :: String -- change this once you get GUI working
                  } deriving (Show)
+type Ruleset = (Bool, [Rule]) -- wrap y/n and rule list
 
 
 turn :: A.Dir -> Instruction -> A.Dir
