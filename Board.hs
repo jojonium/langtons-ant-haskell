@@ -26,5 +26,6 @@ stringify = (intercalate "\n") . map (map toBase64)
 
 toBase64 :: Int -> Char
 toBase64 x = b64Chars !! x
-    where b64Chars = ['A'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ "+/"
+    where b64Chars = ' ' : ['B'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ "+/"
+          -- 'A' replaced with ' ' for better readability
 

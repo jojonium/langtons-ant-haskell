@@ -33,11 +33,11 @@ leftOf :: Dir -> Dir
 leftOf d = case d of Ant.Up    -> Ant.Left
                      Ant.Right -> Ant.Up
                      Ant.Down  -> Ant.Right
-                     Ant.Left  -> Ant.Up
+                     Ant.Left  -> Ant.Down
 
 
 deltas :: Dir -> (Int, Int)
-deltas Ant.Up    = (0,  1)
-deltas Ant.Down  = (0, -1)
+deltas Ant.Up    = (0, -1)
+deltas Ant.Down  = (0, 1)
 deltas Ant.Left  = (-1, 0)
 deltas Ant.Right = (1, 0)

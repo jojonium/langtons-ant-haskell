@@ -3,24 +3,45 @@ import Ant
 import Rule
 
 testBoard :: Board
-testBoard = emptyBoard 20 10
+testBoard = emptyBoard 100 100
 
 testRules :: [Rule]
 testRules = [Rule TurnRight "white", Rule TurnLeft "black"]
 
 testAnts :: [Ant]
-testAnts = [ newAnt 10 5 Up ]
+testAnts = [ newAnt 50 50 Up
+           , newAnt 25 25 Down ]
 
 
-runSim :: [Rule] -> ([Ant], Board) -> Int -> ([Ant], [Board])
-runSim _ (as, b) 0 = ([as], [b])
-runSim rs (as, b) n
-  | n < 0     = error "steps must be positive"
-  | otherwise = ([as], [b]) -- TODO
+printTest :: Int -> IO ()
+printTest n = let x = runSim testRules (testAnts, testBoard) n
+                  y = map snd x
+               in printBoards y
+
+printTestResult :: Int -> IO()
+printTestResult n = let x = runSim testRules (testAnts, testBoard) n
+                        y = snd (last x)
+                     in printBoard y
+
+printBoards :: [Board] -> IO ()
+printBoards bs = do mapM_ printBoard bs
 
 
 printBoard :: Board -> IO ()
 printBoard b = do putStrLn $ '\n' : stringify b
+
+
+
+-- runs the simulation for n steps, returning a list of (ant list, board) pairs
+-- representing each step along the way
+runSim :: [Rule] -> ([Ant], Board) -> Int -> [([Ant], Board)]
+runSim _ (as, b) 0 = []
+runSim rs (as, b) n
+  | n < 0     = error "steps must be positive"
+  | otherwise = let nextTuple = step rs (as, b)
+                 in nextTuple : if length as > 0
+                                    then runSim rs nextTuple (pred n)
+                                        else []  -- end if no ants left
 
 
 -- moves the simulation forward one step, moving each ant and then updating the
@@ -28,16 +49,21 @@ printBoard b = do putStrLn $ '\n' : stringify b
 -- multiple ants moving to the same square don't interfere with each other
 step :: [Rule] -> ([Ant], Board) -> ([Ant], Board)
 step rs (as, b) =
-  let newAnts  = moveAnts rs b as
+  let height   = length b
+      width    = length (b !! 0)
+      newAnts  = filter (sane width height) $ moveAnts rs b as
       newBoard = updateColors rs b newAnts
    in (newAnts, newBoard)
-
+  where sane w h (Ant _ (Coord ax ay) _) = ax >= 0 && 
+                                           ay >= 0 &&
+                                           ax <  w && 
+                                           ay <  h
 
 -- moves all ants without modifying the board
 moveAnts :: [Rule] -> Board -> [Ant] -> [Ant]
 moveAnts rs b = map (moveAnt rs b)
     where moveAnt rs b (Ant ad (Coord ax ay) (Coord lx ly)) = -- move single ant
-            let Rule inst _  = rs !! ((b !! ay) !! ax)  -- don't care about colors
+            let Rule inst _  = rs !! ((b !! ay) !! ax)  -- colors don't matter
                 newD         = turn ad inst  -- turn according to rule on spot
                 (dx, dy)     = deltas newD
                 (newX, newY) = (ax + dx, ay + dy)  -- new position
