@@ -16,12 +16,13 @@ testAnts :: [Ant]
 testAnts = [ newAnt 50 50 Up
            ]
 
-
+-- prints each board along the way
 printTest :: Int -> IO ()
 printTest n = let x = runSim testRules (testAnts, testBoard) n
                   y = map snd x
                in printBoards y
 
+-- prints only the last board
 printTestResult :: Int -> IO()
 printTestResult n = let x = runSim testRules (testAnts, testBoard) n
                         y = snd (last x)
@@ -33,7 +34,6 @@ printBoards bs = do mapM_ printBoard bs
 
 printBoard :: Board -> IO ()
 printBoard b = do putStrLn $ '\n' : stringify b
-
 
 
 -- runs the simulation for n steps, returning a list of (ant list, board) pairs
@@ -74,6 +74,7 @@ moveAnts rs b = map (moveAnt rs b)
              in Ant newD (Coord newX newY) (Coord ax ay)
 
 
+-- if wrap is true, wraps positions that are off the board
 adjustWrap :: Bool -> Int -> Int -> (Int, Int) -> (Int, Int)
 adjustWrap False _ _ a     = a
 adjustWrap True h w (x, y) = (adjust w x, adjust h y)
@@ -81,6 +82,7 @@ adjustWrap True h w (x, y) = (adjust w x, adjust h y)
             | val < 0         = bound - 1
             | val > bound - 1 = 0
             | otherwise       = val
+
 
 -- increments the colors of all squares an ant just left, without modifying ants
 updateColors :: Ruleset -> Board -> [Ant] -> Board
