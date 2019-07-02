@@ -1,40 +1,10 @@
+module Sim
+    ( runSim
+    ) where
+
 import Board
 import Ant
 import Rule
-
-testBoard :: Board
-testBoard = emptyBoard 100 100
-
-testRules :: Ruleset
-testRules = ( True
-            , [ Rule TurnRight "white"
-              , Rule TurnLeft "black"
-              ]
-            )
-
-testAnts :: [Ant]
-testAnts = [ newAnt 50 50 Up
-           ]
-
--- prints each board along the way
-printTest :: Int -> IO ()
-printTest n = let x = runSim testRules (testAnts, testBoard) n
-                  y = map snd x
-               in printBoards y
-
--- prints only the last board
-printTestResult :: Int -> IO()
-printTestResult n = let x = runSim testRules (testAnts, testBoard) n
-                        y = snd (last x)
-                     in printBoard y
-
-printBoards :: [Board] -> IO ()
-printBoards bs = do mapM_ printBoard bs
-
-
-printBoard :: Board -> IO ()
-printBoard b = do putStrLn $ '\n' : stringify b
-
 
 -- runs the simulation for n steps, returning a list of (ant list, board) pairs
 -- representing each step along the way

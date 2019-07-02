@@ -3,6 +3,7 @@ module Board
     , Board
     , emptyBoard
     , stringify
+    , toBase64
     ) where
 
 import Data.List

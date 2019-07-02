@@ -16,7 +16,7 @@ type Ruleset = (Bool, [Rule]) -- wrap y/n and rule list
 
 turn :: A.Dir -> Instruction -> A.Dir
 turn d Continue  = d
-turn d TurnLeft  = A.leftOf d
-turn d TurnRight = A.rightOf d
-turn d UTurn     = A.rightOf (A.rightOf d)
+turn d TurnLeft  = A.prevDir d
+turn d TurnRight = A.nextDir d
+turn d UTurn     = A.nextDir (A.nextDir d)
 

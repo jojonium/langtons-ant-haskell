@@ -1,15 +1,15 @@
 module Ant
     ( Ant(..)
     , Dir(..)
+    , prevDir
+    , nextDir
     , newAnt
-    , leftOf
-    , rightOf
     , deltas
     ) where
 
 import qualified Board as B
 
-data Dir = Up | Down | Left | Right deriving (Show)
+data Dir = Up | Right | Down | Left deriving (Show, Enum)
 data Ant = Ant { dir  :: Dir
                , loc  :: B.Coord
                , prev :: B.Coord
@@ -22,18 +22,16 @@ newAnt x y d
   | otherwise      = Ant {dir = d, loc = B.Coord x y, prev = B.Coord x y}
 
 
-rightOf :: Dir -> Dir
-rightOf d = case d of Ant.Up    -> Ant.Right
-                      Ant.Right -> Ant.Down
-                      Ant.Down  -> Ant.Left
-                      Ant.Left  -> Ant.Up
+-- handles wraparound
+prevDir :: Dir -> Dir
+prevDir Up = Ant.Left
+prevDir d  = pred d
 
 
-leftOf :: Dir -> Dir
-leftOf d = case d of Ant.Up    -> Ant.Left
-                     Ant.Right -> Ant.Up
-                     Ant.Down  -> Ant.Right
-                     Ant.Left  -> Ant.Down
+-- handles wraparound
+nextDir :: Dir -> Dir
+nextDir Ant.Left = Up
+nextDir d    = succ d
 
 
 deltas :: Dir -> (Int, Int)
