@@ -7,7 +7,7 @@ the Haskell programming language.
 I made this project to help me learn Haskell. It's the first real project I've
 done in the language, so it's probably not perfect, but it works well enough.
 
-## Instructions
+### How to Use
 
 Compile with GHC:
 
@@ -28,11 +28,9 @@ intermediate files:
 
 `$ runhaskell LangtonsAnt.hs -n 10000 -a "50,50,Up" -r "Continue TurnLeft TurnLeft" -p`
 
-For a summary of available options, do
-
-`./LangtonsAnt --help`
-
 ### Available Options
+
+For a summary of available options, do `./LangtonsAnt --help`
 
 ```
 Usage: LangtonsAnt [OPTION]...
