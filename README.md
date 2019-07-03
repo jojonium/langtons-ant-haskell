@@ -15,11 +15,13 @@ Compile with GHC:
 
 Then run it with arguments like so:
 
-```./LangtonsAnt -a "45,45,Up 55,55,Down 45,55,Left 55,45,Right" \
+```
+./LangtonsAnt -a "45,45,Up 55,55,Down 45,55,Left 55,45,Right" \
   -r "TurnLeft TurnRight" \
   -h 100 \
   -w 100 \
-  -n 1000```
+  -n 1000
+```
 
 For a summary of available options, do
 
