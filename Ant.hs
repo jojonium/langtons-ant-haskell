@@ -13,7 +13,12 @@ data Dir = Up | Right | Down | Left deriving (Show, Enum)
 data Ant = Ant { dir  :: Dir
                , loc  :: B.Coord
                , prev :: B.Coord
-               } deriving (Show)
+               }
+
+instance Show Ant where
+    show a = let (B.Coord x y) = loc a
+              in "Ant: " ++ "location " ++ show x ++ ", " ++ show y ++
+                  ": direction " ++ show (dir a)
 
 
 newAnt :: Int -> Int -> Dir -> Ant

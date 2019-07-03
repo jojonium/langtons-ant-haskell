@@ -1,18 +1,19 @@
 module Main ( main ) where
 
-import Control.Concurrent
-import System.IO
-import System.Environment
-import Data.Maybe ( fromMaybe )
-import System.Exit
-import System.Console.GetOpt
+import System.IO             ( IO(..), putStrLn, hPutStrLn, stderr )
+import System.Exit           ( exitWith, ExitCode(..) )
+import System.Environment    ( getArgs )
+import System.Console.GetOpt ( getOpt, OptDescr(..), ArgDescr(..)
+                             , ArgOrder(..), usageInfo )
+import Data.Maybe            ( fromMaybe )
+import Data.Char             ( toLower )
+import Data.List             ( isPrefixOf, intercalate )
+
 import Board
 import Ant
 import Rule
 import Sim
 
-
----------------------------- Command Line Arguments ----------------------------
 
 data Options = Options
     { optAntStr  :: String
@@ -26,12 +27,12 @@ data Options = Options
     } deriving (Show)
 
 defaultOptions = Options
-    { optAntStr  = "(20, 20 Up)"
+    { optAntStr  = "50,50,Up"
     , optRuleStr = "TurnLeft, TurnRight"
-    , optHeight  = 50
-    , optWidth   = 50
+    , optHeight  = 100
+    , optWidth   = 100
     , optWrap    = False
-    , optIter    = 1000
+    , optIter    = 11000
     , optVersion = False
     , optHelp    = False
     }
@@ -40,10 +41,10 @@ options :: [OptDescr (Options -> Options)]
 options =  -- I'm sorry this is so ugly
     [ Option ['a'] ["ants"]
           (ReqArg (\ s opts -> opts { optAntStr = s }) "ANTSTR")
-          "specify ant string, like '(20, 20, Up), (15, 10, Left)'"
+          "specify ant string, like '20,20,Up, 15,10,Left'"
     , Option ['r'] ["rules"]
           (ReqArg (\ s opts -> opts { optRuleStr = s }) "RULESTR")
-          "specify rule string, like 'TurnLeft, TurnRight'"
+          "specify rule string, like 'TurnLeft, Continue, UTurn'"
     , Option ['h'] ["height"]
           (ReqArg (\ i opts -> opts { optHeight = read i }) "N")
           "specify board height"
@@ -68,6 +69,10 @@ options =  -- I'm sorry this is so ugly
 main = getArgs >>= parse
 
 
+version = "LangtonsAnt version 0.0.1\nWritten by Joseph Petitti"
+header  = "Usage: LangtonsAnt [OPTION]..."
+
+
 parse :: [String] -> IO ()
 parse argv = 
   case getOpt Permute options argv of
@@ -78,43 +83,76 @@ parse argv =
                         else if optVersion co
                              then do putStrLn version
                                      exitWith ExitSuccess
-                             else do processOptions co 
+                             else do runWithOptions co 
                                      exitWith ExitSuccess
     (_, _, errs) -> do hPutStrLn stderr e
                        exitWith (ExitFailure 1)
       where e = (concat errs ++ usageInfo header options)
 
 
-processOptions :: Options -> IO ()
-processOptions o =
+-- extracts options and runs the simulation to that step, printing the result
+runWithOptions :: Options -> IO ()
+runWithOptions o =
   let as = decodeAntStr (optAntStr o)
       rs = (optWrap o, decodeRuleStr (optRuleStr o))
       w  = optWidth o
       h  = optHeight o
       n  = optIter o
-   in do putStrLn $ errorCheck as rs w h n
+   in if not (errorCheck as rs w h n)
+         then exitWith (ExitFailure 1)
+         else let x = runSim rs (as, emptyBoard w h) n
+                  y = snd (last x)
+               in putStrLn $ prettyPrintBoard as rs h w n y
 
 
-errorCheck :: [Ant] -> Ruleset -> Int -> Int -> Integer -> String
+-- makes sure inputs are valid, returning true if they are or crashing with an
+-- error otherwise. There's probably a more elegant way of doing this with
+-- exceptions, but for now this works
+errorCheck :: [Ant] -> Ruleset -> Int -> Int -> Integer -> Bool
 errorCheck [] _ _ _ _      = error "Couldn't decode ant string"
 errorCheck _ (_, []) _ _ _ = error "Couldn't decode rule string"
-errorCheck as rs w h n
-  | w < 1     = error $ "Width too small: " ++ (show w)
-  | h < 1     = error $ "Height too small: " ++ (show h)
-  | n < 0     = error $ "Iteration count can't be negative: " ++ show n
-  | otherwise = "success" -- TODO
+errorCheck as (_, rs) w h n
+  | w < 1         = error $ "Width too small: " ++ (show w)
+  | h < 1         = error $ "Height too small: " ++ (show h)
+  | n < 0         = error $ "Iteration count can't be negative: " ++ (show n)
+  | length rs < 2 = error $ "Too few rules: " ++ show (length rs)
+  | otherwise = checkAnts w h as
+
+
+-- returns True if all ant positions are within the width and height bounds
+checkAnts :: Int -> Int -> [Ant] -> Bool
+checkAnts w h []     = False;
+checkAnts w h as     = foldl (\acc x -> acc || checkAnt w h x) False as
+    where checkAnt w h a = let Coord x y = loc a
+                            in x >= 0 && x < w && y >= 0 && y < h
 
 
 -- converts rule string to list of Rules
 decodeRuleStr :: String -> [Rule]
-decodeRuleStr [] = error "decodeRuleStr received an empty string"
-decodeRuleStr s  = [ TurnLeft ] --TODO
-
+decodeRuleStr = map (decodeRuleWord . (map toLower)) . words
+    where decodeRuleWord w
+            | isPrefixOf "turnl" w = TurnLeft
+            | isPrefixOf "left"  w = TurnLeft
+            | isPrefixOf "turnr" w = TurnRight
+            | isPrefixOf "right" w = TurnRight
+            | isPrefixOf "cont"  w = Continue
+            | isPrefixOf "stra"  w = Continue
+            | isPrefixOf "utur"  w = UTurn
+            | otherwise            = error $ e w
+          e x = "decodeRuleStr couldn't read word: " ++ x
+    
 
 -- converts ant string to list of ants
 decodeAntStr :: String -> [Ant]
-decodeAntStr [] = error "decodeAntStr received an empty string"
-decodeAntStr s  = [ newAnt 50 50 Up ] -- TODO
+decodeAntStr = map (decodeAntWord . (split ',') . (map toLower)) . words
+    where decodeAntWord (i:j:d:_) = newAnt (read i) (read j) (readDir d)
+          decodeAntWord z         = error $ e (intercalate "," z)
+          readDir ('l':_)         = Ant.Left
+          readDir ('r':_)         = Ant.Right
+          readDir ('u':_)         = Ant.Up
+          readDir ('d':_)         = Ant.Down
+          readDir w               = error $ e w
+          e x = "decodeAntStr couldn't read word: " ++ x
 
 
 -- splits a string by delimeter d
@@ -126,39 +164,17 @@ split d (x:xs)
       where rest = split d xs
 
 
-version = "LangtonsAnt version 0.0.1\nWritten by Joseph Petitti"
-header  = "Usage: LangtonsAnt [OPTION]..."
-success = exitWith ExitSuccess
-fail    = exitWith (ExitFailure 1)
+-- makes a string of a board along with a summary of the arguments used to get
+-- to it
+prettyPrintBoard :: [Ant] -> Ruleset -> Int -> Int -> Integer -> Board -> String
+prettyPrintBoard as (p, rs) h w n b =
+    stringify b ++ "\nAnts: "    ++ (show as) ++
+                   "\nRules: "   ++ (show rs) ++
+                    "\nWrap? "   ++ (show p)  ++
+                    "\nWidth: "  ++ (show w)  ++
+                    "\nHeight: " ++ (show h) ++
+                    "\nIterations: " ++ (show n)
 
---------------------------------------------------------------------------------
-
-
-testBoard :: Board
-testBoard = emptyBoard 50 50
-
-testRules :: Ruleset
-testRules = ( True
-            , [ TurnRight
-              , TurnLeft
-              ]
-            )
-
-testAnts :: [Ant]
-testAnts = [ newAnt 25 25 Up
-           ]
-
--- prints each board along the way
-printTest :: Int -> IO ()
-printTest n = let x = runSim testRules (testAnts, testBoard) n
-                  y = map snd x
-               in printBoards y
-
--- prints only the last board
-printTestResult :: Int -> IO()
-printTestResult n = let x = runSim testRules (testAnts, testBoard) n
-                        y = snd (last x)
-                     in printBoard y
 
 printBoards :: [Board] -> IO ()
 printBoards bs = mapM_ printBoard bs 

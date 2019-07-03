@@ -8,7 +8,7 @@ import Rule
 
 -- runs the simulation for n steps, returning a list of (ant list, board) pairs
 -- representing each step along the way
-runSim :: Ruleset -> ([Ant], Board) -> Int -> [([Ant], Board)]
+runSim :: (Integral a) => Ruleset -> ([Ant], Board) -> a -> [([Ant], Board)]
 runSim _ (as, b) 0 = []
 runSim rs (as, b) n
   | n < 0     = error "steps must be positive"
