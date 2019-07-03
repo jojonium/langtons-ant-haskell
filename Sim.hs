@@ -35,7 +35,7 @@ step (wrap, rs) (as, b) =
 moveAnts :: Ruleset -> Board -> [Ant] -> [Ant]
 moveAnts rs b = map (moveAnt rs b)
     where moveAnt (wrap, rs) b (Ant ad (Coord ax ay) (Coord lx ly)) = -- move single ant
-            let Rule inst _  = rs !! ((b !! ay) !! ax)  -- colors don't matter
+            let inst         = rs !! ((b !! ay) !! ax)
                 newD         = turn ad inst  -- turn according to rule on spot
                 (dx, dy)     = deltas newD
                 height       = length b
