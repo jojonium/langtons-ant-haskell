@@ -39,7 +39,7 @@ intermediate files:
 
 ### Available Options
 
-For a summary of available options, do `./LangtonsAnt --help`
+For a summary of available options, do `langtons-ant --help`
 
 ```
 Usage: langtons-ant [OPTION]...
