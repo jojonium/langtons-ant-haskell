@@ -9,31 +9,40 @@ done in the language, so it's probably not perfect, but it works well enough.
 
 ### How to Use
 
-Compile with GHC:
-
-`ghc LangtonsAnt.hs`
-
-Then run it with arguments like so:
+With Cabal you can just run `cabal run` to run the program directly with
+arguments like so:
 
 ```
-$ ./LangtonsAnt -a "45,45,Up 55,55,Down 45,55,Left 55,45,Right" \
+$ cabal run -- -a "45,45,Up 55,55,Down 45,55,Left 55,45,Right" \
     -r "TurnLeft TurnRight" \
     -h 100 \
     -w 100 \
     -n 1000
 ```
 
+Alternatively build it first with:
+
+```
+cabal configure
+cabal build
+```
+
+And find the executable under `dist/build/langtons-ant`. 
+
+You can also use `cabal install` if you want to install the executable to your
+system.
+
 Alternatively you can compile and run it all in one go without leaving behind
 intermediate files:
 
-`$ runhaskell LangtonsAnt.hs -n 10000 -a "50,50,Up" -r "Continue TurnLeft TurnLeft" -p`
+`$ runhaskell src/LangtonsAnt.hs -n 10000 -a "50,50,Up" -r "Continue TurnLeft TurnLeft" -p`
 
 ### Available Options
 
 For a summary of available options, do `./LangtonsAnt --help`
 
 ```
-Usage: LangtonsAnt [OPTION]...
+Usage: langtons-ant [OPTION]...
   -a ANTSTR   --ants=ANTSTR    specify ant string, like '20,20,Up, 15,10,Left'
   -r RULESTR  --rules=RULESTR  specify rule string, like 'TurnLeft, Continue, UTurn'
   -h N        --height=N       specify board height

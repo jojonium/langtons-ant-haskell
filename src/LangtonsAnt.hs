@@ -69,8 +69,8 @@ options =  -- I'm sorry this is so ugly
 main = getArgs >>= parse
 
 
-version = "LangtonsAnt version 0.0.1\nWritten by Joseph Petitti"
-header  = "Usage: LangtonsAnt [OPTION]..."
+version = "langtons-ant version 0.0.1\nWritten by Joseph Petitti"
+header  = "Usage: langtons-ant [OPTION]..."
 
 
 parse :: [String] -> IO ()
