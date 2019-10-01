@@ -9,11 +9,11 @@ done in the language, so it's probably not perfect, but it works well enough.
 
 ### How to Use
 
-With Cabal you can just run `cabal run` to run the program directly with
+With Stack you can just run `stack run` to run the program directly with
 arguments like so:
 
 ```
-$ cabal run -- -a "45,45,Up 55,55,Down 45,55,Left 55,45,Right" \
+$ stack run -- -a "45,45,Up 55,55,Down 45,55,Left 55,45,Right" \
     -r "TurnLeft TurnRight" \
     -h 100 \
     -w 100 \
@@ -23,19 +23,12 @@ $ cabal run -- -a "45,45,Up 55,55,Down 45,55,Left 55,45,Right" \
 Alternatively build it first with:
 
 ```
-cabal configure
-cabal build
+$ stack setup
+$ stack build
 ```
 
-And find the executable under `dist/build/langtons-ant`. 
-
-You can also use `cabal install` if you want to install the executable to your
+You can also use `stack install` if you want to install the executable to your
 system.
-
-Alternatively you can compile and run it all in one go without leaving behind
-intermediate files:
-
-`$ runhaskell src/LangtonsAnt.hs -n 10000 -a "50,50,Up" -r "Continue TurnLeft TurnLeft" -p`
 
 ### Available Options
 
@@ -64,3 +57,11 @@ If you omit any option its default will be substituted:
 * -w (Width): 100
 * -p (Wrap): no wrap
 * -n (Iteration): 11000
+* -g (Graphical): non-graphical
+
+### Invalid Options
+
+If you pass the program impossible options, like a negative width, you'll get an
+informative error like `Width too small`. If you give the program legal but
+invalid options, like having no ants starting within the bounds of the board,
+you'll get no output. This is intentional.
