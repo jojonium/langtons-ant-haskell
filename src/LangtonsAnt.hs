@@ -9,10 +9,13 @@ import Data.Maybe            ( fromMaybe )
 import Data.Char             ( toLower )
 import Data.List             ( isPrefixOf, intercalate )
 
+import Graphics.Gloss        ( simulate )
+
 import Board
 import Ant
 import Rule
 import Sim
+import GUI
 
 
 data Options = Options
@@ -43,22 +46,22 @@ options :: [OptDescr (Options -> Options)]
 options =  -- I'm sorry this is so ugly
     [ Option ['a'] ["ants"]
           (ReqArg (\ s opts -> opts { optAntStr = s }) "ANTSTR")
-          "specify ant string, like '20,20,Up, 15,10,Left'"
+          "ant string, like '20,20,Up, 15,10,Left'"
     , Option ['r'] ["rules"]
           (ReqArg (\ s opts -> opts { optRuleStr = s }) "RULESTR")
-          "specify rule string, like 'TurnLeft, Continue, UTurn'"
+          "rule string, like 'TurnLeft, Continue, UTurn'"
     , Option ['h'] ["height"]
           (ReqArg (\ i opts -> opts { optHeight = read i }) "N")
-          "specify board height"
+          "board height"
     , Option ['w'] ["width"]
           (ReqArg (\ i opts -> opts { optWidth = read i }) "M")
-          "specify board width"
+          "board width"
     , Option ['p'] ["wrap"]
           (NoArg (\ opts -> opts { optWrap = True }))
           "ants wrap around board edges"
     , Option ['n'] ["number"]
           (ReqArg (\ i opts -> opts { optIter = read i }) "X")
-          "specify number of iterations"
+          "number of iterations for non-graphical mode"
     , Option ['g'] ["graphical"]
           (NoArg (\ opts -> opts { optGUI = True }))
           "display steps in a graphical window"
@@ -190,3 +193,18 @@ printBoards bs = mapM_ printBoard bs
 
 printBoard :: Board -> IO ()
 printBoard b = putStrLn $ '\n' : stringify b
+
+
+
+runSimGraphical :: (Integral a) => Model -> a -> IO ()
+runSimGraphical (rs, as, b) n
+  | n < 0     = error "steps must be positive"
+  | otherwise = do go (rs, as, b)
+
+
+go :: Model -> IO ()
+go (rs, as, b) = 
+  simulate (window w h) background fps (rs, as, b) displayBoard (\_ _ m -> step m)
+  where h = length b
+        w = length (b !! 0)
+

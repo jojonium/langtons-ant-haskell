@@ -1,13 +1,12 @@
 module Sim
     ( Model(..)
     , runSim
-    , runSimGraphical
+    , step
     ) where
 
 import Board
 import Ant
 import Rule
-import GUI
 
 type Model = (Ruleset, [Ant], Board)
 
@@ -21,12 +20,6 @@ runSim (rs, as, b) n
                  in nextTriple : if length as > 0
                                     then runSim nextTriple (pred n)
                                         else []  -- end if no ants left
-
-
-runSimGraphical :: (Integral a) => Model -> a -> IO ()
-runSimGraphical (rs, as, b) n
-  | n < 0     = error "steps must be positive"
-  | otherwise = do go (rs, as, b)
 
 
 -- moves the simulation forward one step, moving each ant and then updating the

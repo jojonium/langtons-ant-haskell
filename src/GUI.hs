@@ -1,5 +1,8 @@
 module GUI
-    ( go
+    ( window
+    , background
+    , fps
+    , displayBoard
     ) where
 
 import Ant
@@ -18,7 +21,7 @@ windowTitle :: String
 windowTitle = "Langton's Ant"
 
 background :: Color
-background =  white
+background = makeColorI 230 230 230 255
 
 squareSize :: Int
 squareSize = 10
@@ -38,12 +41,12 @@ displayBoard (_, _, b) =
         h  = length b
         w  = length (b !! 0)
         drawOne :: (Int, Int) -> Picture
-        drawOne (x, y) = drawSquare x y w h (0)
+        drawOne (x, y) = drawSquare x y w h ((b !! y) !! x)
 
 
 drawSquare :: Int -> Int -> Int -> Int -> Int -> Picture
 drawSquare x y w h n =
-  Translate a b $ rectangleSolid ss ss
+  Translate a b $ Color (getColor n) $ rectangleSolid ss ss
   where ss = fromIntegral squareSize
         a  = getOffsetX x w
         b  = getOffsetY y h
@@ -56,18 +59,16 @@ getOffsetX x w = (fromIntegral (x - (div w 2)) + 0.5) * ss
 
 
 getOffsetY :: Int -> Int -> Float
-getOffsetY y h = (fromIntegral (y + (div h 2)) - 0.5) * ss
+getOffsetY y h = (fromIntegral (y - (div h 2)) + 0.5) * ss
                  where ss:: Float
                        ss = fromIntegral squareSize
 
 
--- TODO implement
-step :: ViewPort -> Float -> Model -> Model
-step _ _ (rs, as, b) = (rs, as, b)
-
-
-go :: Model -> IO ()
-go (rs, as, b) = 
-  simulate (window w h) background fps (rs, as, b) displayBoard step
-  where h = length b
-        w = length (b !! 0)
+getColor :: Int -> Color
+getColor n
+  | n < 0 || n > 63 = error "getColor: n must be [0..63] inclusive"
+  | n == 0          = white
+  | otherwise       = makeColor r g b 1
+    where r = fromIntegral n / 63
+          g = fromIntegral n / 63
+          b = fromIntegral n / 63
