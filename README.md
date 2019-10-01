@@ -36,16 +36,20 @@ For a summary of available options, do `langtons-ant --help`
 
 ```
 Usage: langtons-ant [OPTION]...
-  -a ANTSTR   --ants=ANTSTR    specify ant string, like '20,20,Up, 15,10,Left'
-  -r RULESTR  --rules=RULESTR  specify rule string, like 'TurnLeft, Continue, UTurn'
-  -h N        --height=N       specify board height
-  -w M        --width=M        specify board width
+  -a ANTSTR   --ants=ANTSTR    ant string, like '20,20,Up, 15,10,Left'
+  -r RULESTR  --rules=RULESTR  rule string, like 'TurnLeft, Continue, UTurn'
+  -h N        --height=N       board height
+  -w M        --width=M        board width
   -p          --wrap           ants wrap around board edges
-  -n X        --number=X       specify number of iterations
+  -n X        --number=X       number of iterations for non-graphical mode
   -g          --graphical      display steps in a graphical window
   -v          --version        output version information and exit
               --help           display this help and exit
 ```
+
+Normally, the result of running the simulation for N steps will be printed to
+stdout. However, if the graphical mode flag (`-g`) is set, the simulation will
+be run graphically in a window until all ants fall off the board.
 
 ### Default Options
 
