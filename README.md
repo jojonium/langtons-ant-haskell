@@ -49,6 +49,7 @@ Usage: langtons-ant [OPTION]...
   -w M        --width=M        specify board width
   -p          --wrap           ants wrap around board edges
   -n X        --number=X       specify number of iterations
+  -g          --graphical      display steps in a graphical window
   -v          --version        output version information and exit
               --help           display this help and exit
 ```

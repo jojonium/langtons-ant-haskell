@@ -11,7 +11,6 @@ import Data.List
 data Coord = Coord Int Int deriving (Show)
 type Board = [[Int]] -- list of rows
 
-
 -- creates a w by h board filled with 0s
 emptyBoard :: Int -> Int -> Board
 emptyBoard w h
@@ -26,7 +25,7 @@ stringify = (intercalate "\n") . map (map toBase64)
 
 
 toBase64 :: Int -> Char
-toBase64 x = b64Chars !! x
+toBase64 x = b64Chars !! (mod x 63)
     where b64Chars = ' ' : ['B'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ "+/"
           -- 'A' replaced with ' ' for better readability
 

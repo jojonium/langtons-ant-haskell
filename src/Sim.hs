@@ -1,33 +1,44 @@
 module Sim
-    ( runSim
+    ( Model(..)
+    , runSim
+    , runSimGraphical
     ) where
 
 import Board
 import Ant
 import Rule
+import GUI
+
+type Model = (Ruleset, [Ant], Board)
 
 -- runs the simulation for n steps, returning a list of (ant list, board) pairs
 -- representing each step along the way
-runSim :: (Integral a) => Ruleset -> ([Ant], Board) -> a -> [([Ant], Board)]
-runSim _ (as, b) 0 = []
-runSim rs (as, b) n
+runSim :: (Integral a) => Model -> a -> [Model]
+runSim _ 0 = []
+runSim (rs, as, b) n
   | n < 0     = error "steps must be positive"
-  | otherwise = let nextTuple = step rs (as, b)
-                 in nextTuple : if length as > 0
-                                    then runSim rs nextTuple (pred n)
+  | otherwise = let nextTriple = step (rs, as, b)
+                 in nextTriple : if length as > 0
+                                    then runSim nextTriple (pred n)
                                         else []  -- end if no ants left
+
+
+runSimGraphical :: (Integral a) => Model -> a -> IO ()
+runSimGraphical (rs, as, b) n
+  | n < 0     = error "steps must be positive"
+  | otherwise = do go (rs, as, b)
 
 
 -- moves the simulation forward one step, moving each ant and then updating the
 -- board. The board must be updated after each ant is finished moving so that
 -- multiple ants moving to the same square don't interfere with each other
-step :: Ruleset -> ([Ant], Board) -> ([Ant], Board)
-step (wrap, rs) (as, b) =
+step :: Model -> Model
+step ((wrap, rs), as, b) =
   let height   = length b
       width    = length (b !! 0)
       newAnts  = filter (sane wrap width height) $ moveAnts (wrap, rs) b as
       newBoard = updateColors (wrap, rs) b newAnts
-   in (newAnts, newBoard)
+   in ((wrap, rs), newAnts, newBoard)
   where sane wrap w h (Ant _ (Coord ax ay) _) = wrap || (ax >= 0 && ay >= 0 &&
                                                          ax <  w && ay <  h)
 

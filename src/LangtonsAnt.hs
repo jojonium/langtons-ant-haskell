@@ -24,6 +24,7 @@ data Options = Options
     , optIter    :: Integer
     , optVersion :: Bool
     , optHelp    :: Bool
+    , optGUI     :: Bool
     } deriving (Show)
 
 defaultOptions = Options
@@ -35,6 +36,7 @@ defaultOptions = Options
     , optIter    = 11000
     , optVersion = False
     , optHelp    = False
+    , optGUI     = False
     }
 
 options :: [OptDescr (Options -> Options)]
@@ -57,6 +59,9 @@ options =  -- I'm sorry this is so ugly
     , Option ['n'] ["number"]
           (ReqArg (\ i opts -> opts { optIter = read i }) "X")
           "specify number of iterations"
+    , Option ['g'] ["graphical"]
+          (NoArg (\ opts -> opts { optGUI = True }))
+          "display steps in a graphical window"
     , Option ['v'] ["version"]
           (NoArg (\ opts -> opts { optVersion = True }))
           "output version information and exit"
@@ -69,7 +74,7 @@ options =  -- I'm sorry this is so ugly
 main = getArgs >>= parse
 
 
-version = "langtons-ant version 0.0.1\nWritten by Joseph Petitti"
+version = "langtons-ant version 1.1.0\nWritten by Joseph Petitti"
 header  = "Usage: langtons-ant [OPTION]..."
 
 
@@ -98,11 +103,15 @@ runWithOptions o =
       w  = optWidth o
       h  = optHeight o
       n  = optIter o
+      g  = optGUI o
    in if not (errorCheck as rs w h n)
          then exitWith (ExitFailure 1)
-         else let x = runSim rs (as, emptyBoard w h) n
-                  y = snd (last x)
-               in putStrLn $ prettyPrintBoard as rs h w n y
+         else if (g)
+                 then runSimGraphical (rs, as, emptyBoard w h) n
+                 else let x = runSim (rs, as, emptyBoard w h) n
+                          y = thrd (last x)
+                              where thrd (_, _, q) = q
+                      in putStrLn $ prettyPrintBoard as rs h w n y
 
 
 -- makes sure inputs are valid, returning true if they are or crashing with an
@@ -172,7 +181,7 @@ prettyPrintBoard as (p, rs) h w n b =
                    "\nRules: "   ++ (show rs) ++
                     "\nWrap? "   ++ (show p)  ++
                     "\nWidth: "  ++ (show w)  ++
-                    "\nHeight: " ++ (show h) ++
+                    "\nHeight: " ++ (show h)  ++
                     "\nIterations: " ++ (show n)
 
 
