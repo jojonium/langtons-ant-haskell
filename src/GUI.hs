@@ -24,7 +24,7 @@ background :: Color
 background = makeColorI 230 230 230 255
 
 squareSize :: Int
-squareSize = 10
+squareSize = 5
 
 window :: Int -> Int -> Display
 window w h = InWindow windowTitle (width, height) (0, 0)
@@ -33,7 +33,6 @@ window w h = InWindow windowTitle (width, height) (0, 0)
 
 
 -- displays a board state as a Picture
--- TODO implement
 displayBoard :: Model -> Picture
 displayBoard (_, _, b) = 
   Pictures $ map drawOne [(x, y) | x <- [0..w-1], y <- [0..h-1]]
@@ -65,10 +64,10 @@ getOffsetY y h = (fromIntegral (y - (div h 2)) + 0.5) * ss
 
 
 getColor :: Int -> Color
+getColor 0 = white
 getColor n
   | n < 0 || n > 63 = error "getColor: n must be [0..63] inclusive"
-  | n == 0          = white
   | otherwise       = makeColor r g b 1
-    where r = fromIntegral n / 63
-          g = fromIntegral n / 63
-          b = fromIntegral n / 63
+  where r = (fromIntegral (mod n 5) / 5) :: Float
+        g = (fromIntegral (mod n 4) / 4) :: Float
+        b = (fromIntegral (mod n 3) / 3) :: Float
